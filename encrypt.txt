@@ -1,0 +1,6 @@
+ Ехал Грека через реку, видит Грека - в реке рак, сунул Грека руку в реку, рак за руку Греку цап.
+
+- Can a kangaroo jump higher than a house?
+- Of course, a house doesn't jump at all
+
+[2, 3, 4] + {1.2, 22, 11} * (34<=>34)
