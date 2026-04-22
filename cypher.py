@@ -13,8 +13,7 @@ def encrypt(text, sid=70223717): # ----->
         index = inverse.find(symbhol) - shift
         encrypted_message_list.append(inverse[index])
     encrypted_message_line = "".join(encrypted_message_list)
-    with open('encrypt_result.txt', 'a', encoding='utf-8') as file:
-        file.write(encrypted_message_line + '\n')
+    return encrypted_message_line
 
 def decrypt(text, sid=70223717): # <-----
     decrypted_message_list = []
@@ -26,8 +25,7 @@ def decrypt(text, sid=70223717): # <-----
         index = circle.find(symbhol) - shift
         decrypted_message_list.append(circle[index])
     decrypted_message_line = "".join(decrypted_message_list)
-    with open('decrypt_result.txt', 'a', encoding='utf-8') as file:
-        file.write(decrypted_message_line + '\n')
+    return decrypted_message_line
 
 
 # Выполняем если код запущен напрямую
@@ -38,12 +36,14 @@ if __name__ == "__main__":
         open(file, 'w').close()
 
     # Открываем вайл encrypt.txt, перебираем каждую линию удаляя перенос строки и применяем к ней метод encrypt
-    with open('encrypt.txt', 'r', encoding='utf-8') as file:
+    with open('decrypt.txt', 'r', encoding='utf-8') as file:
         for line in file:
             line = line.replace("\n", "").replace("\r", "")
-            encrypt(line)
+            encrypted_message_line = encrypt(line)
+            with open('decrypt_result.txt', 'a', encoding='utf-8') as file:
+                file.write(encrypted_message_line + '\n')
     # Открываем файл encrypt_result.txt и выводим его содержимое
-    with open('encrypt_result.txt', 'r', encoding='utf-8') as file:
+    with open('decrypt_result.txt', 'r', encoding='utf-8') as file:
         for line in file:
             line = line.replace("\n", "").replace("\r", "")
             print(line)
@@ -51,10 +51,12 @@ if __name__ == "__main__":
     print('-------------------------------------------')
 
     # Открываем вайл decrypt.txt, перебираем каждую линию удаляя перенос строки и применяем к ней метод decrypt
-    with open('decrypt.txt', 'r', encoding='utf-8') as file:
+    with open('encrypt.txt', 'r', encoding='utf-8') as file:
         for line in file:
             line = line.replace("\n", "").replace("\r", "")
-            decrypt(line)
+            decrypted_message_line = decrypt(line)
+            with open('encrypt_result.txt', 'a', encoding='utf-8') as file:
+                file.write(decrypted_message_line + '\n')
     # Открываем файл decrypt_result.txt и выводим его содержимое
     with open('decrypt_result.txt', 'r', encoding='utf-8') as file:
         for line in file:
