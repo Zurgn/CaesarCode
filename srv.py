@@ -6,36 +6,6 @@ import os
 
 app = flask.Flask(__name__)
 
-HTML_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head><title>Сообщение</title></head>
-<body>
-    <form method="POST">
-        <label>Введите сообщение:</label><br>
-        <textarea style="width:95%" name="text"></textarea><br>
-        <input type="submit" value="Отправить">
-    </form>
-</body>
-</html>
-"""
-
-HTML_SAVE = """
-        <HTML><BODY>
-        <p>Сообщение сохранено:</p>
-        <p>{{msg}}</p>
-        </BODY></HTML>
-        """
-
-HTML_RESET = """
-<!DOCTYPE html>
-<HTML>
-<BODY>
-<p>messages.csv стёрт</p>
-</BODY>
-</HTML>
-"""
-
 def get_next_index(filename):
     if not os.path.exists(filename):
         return 1
@@ -51,14 +21,14 @@ def handle_request(user_id):
         with open('messages.csv', 'a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             writer.writerow([index, encrypted_text, datetime.datetime.now(), flask.request.remote_addr])
-        return flask.render_template_string(HTML_SAVE, msg=encrypted_text)
-    return flask.render_template_string(HTML_TEMPLATE)
+        return flask.render_template("save.html", msg=encrypted_text)
+    return flask.render_template("message.html")
 
 @app.route('/reset')
 def reset():
     if os.path.exists('messages.csv'):
         os.remove('messages.csv')
-    return flask.render_template_string(HTML_RESET)
+    return flask.render_template("reset.html")
 
 @app.route('/get_all.json')
 def get_all():
