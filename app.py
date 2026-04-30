@@ -12,7 +12,6 @@ LINE_OUTPUT_TEXT = ID
 while LINE_OUTPUT_TEXT >= 10:
     LINE_OUTPUT_TEXT = sum(int(digit) for digit in str(LINE_OUTPUT_TEXT))
 
-
 def load_file():
     global PATH
     file_path = filedialog.askopenfilename(initialfile="encrypt.txt")
@@ -40,8 +39,6 @@ def load_file():
     except Exception:
         set_status("не удалось открыть файл", "red")
 
-
-
 def save_file():
     global PATH
     if not PATH:
@@ -66,7 +63,6 @@ def set_scroll(sbar, first, last):
     else:
         sbar.place(relx=1.0, y=0, anchor='ne', height=195, width=20)
     sbar.set(first, last)
-
 
 def add_line():
     line = new_line.get("1.0", tkinter.END).strip()

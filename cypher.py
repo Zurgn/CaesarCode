@@ -1,7 +1,5 @@
-# Набор символов используемый для кодирования
 circle = r'''0123456789абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~ '''
 
-# Метод зашифровки
 def encrypt(text, sid=70223717): # ----->
     encrypted_message_list = []
     shift = sid%11
@@ -28,21 +26,17 @@ def decrypt(text, sid=70223717): # <-----
     return decrypted_message_line
 
 
-# Выполняем если код запущен напрямую
 if __name__ == "__main__":
-    # Удаляем всё из файлов с результатами
     clean = ['encrypt_result.txt', 'decrypt_result.txt']
     for file in clean:
         open(file, 'w').close()
 
-    # Открываем вайл encrypt.txt, перебираем каждую линию удаляя перенос строки и применяем к ней метод encrypt
     with open('decrypt.txt', 'r', encoding='utf-8') as file:
         for line in file:
             line = line.replace("\n", "").replace("\r", "")
             encrypted_message_line = encrypt(line)
             with open('decrypt_result.txt', 'a', encoding='utf-8') as file:
                 file.write(encrypted_message_line + '\n')
-    # Открываем файл encrypt_result.txt и выводим его содержимое
     with open('decrypt_result.txt', 'r', encoding='utf-8') as file:
         for line in file:
             line = line.replace("\n", "").replace("\r", "")
@@ -50,14 +44,12 @@ if __name__ == "__main__":
 
     print('-------------------------------------------')
 
-    # Открываем вайл decrypt.txt, перебираем каждую линию удаляя перенос строки и применяем к ней метод decrypt
     with open('encrypt.txt', 'r', encoding='utf-8') as file:
         for line in file:
             line = line.replace("\n", "").replace("\r", "")
             decrypted_message_line = decrypt(line)
             with open('encrypt_result.txt', 'a', encoding='utf-8') as file:
                 file.write(decrypted_message_line + '\n')
-    # Открываем файл decrypt_result.txt и выводим его содержимое
     with open('decrypt_result.txt', 'r', encoding='utf-8') as file:
         for line in file:
             line = line.replace("\n", "").replace("\r", "")
