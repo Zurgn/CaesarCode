@@ -1,0 +1,177 @@
+import tkinter
+from tkinter import filedialog
+from tkinter import ttk
+import cypher
+import csv
+from datetime import datetime
+
+BTN_WIDTH = 40
+BTN_PADY = 5
+ID = 70223717
+PATH = None
+
+LINE_OUTPUT_NEWLINE = ID % 4
+LINE_OUTPUT_TEXT = ID
+while LINE_OUTPUT_TEXT >= 10:
+    LINE_OUTPUT_TEXT = sum(int(digit) for digit in str(LINE_OUTPUT_TEXT))
+
+
+def load_file():
+    global PATH
+    file_path = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")], defaultextension=".csv")
+    if not file_path: return
+    if not file_path.endswith('.csv'):
+        set_status("Ошибка: выберите файл формата .csv", "red")
+        return
+    for item in tree.get_children():
+        tree.delete(item)
+    try:
+        with open(file_path, 'r', encoding='utf-8', newline='') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if len(row) == 4:
+                    decrypted_text = cypher.decrypt(row[1])
+                    tree.insert('', 'end', values=(row[0], decrypted_text, row[2], row[3]))
+            PATH = file_path
+            set_status(f"Файл {file_path} загружен", "green")
+    except Exception as e:
+        set_status(f"Ошибка при чтении файла: {e}", "red")
+
+
+def save_file():
+    global PATH    
+    if not PATH:
+        PATH = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")], initialfile="messages.csv")    
+    if not PATH:
+        return
+    try:
+        data_to_save = []
+        for item in tree.get_children():
+            row_values = tree.item(item)['values']
+            encrypted_text = cypher.encrypt(str(row_values[1]))
+            data_to_save.append([row_values[0], encrypted_text, row_values[2], row_values[3]])
+        with open(PATH, 'w', encoding='utf-8', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows(data_to_save)
+        set_status(f"Сохранено в: {PATH}", "green")
+    except Exception as e:
+        set_status(f"Ошибка сохранения: {e}", "red")
+
+
+def add_line():
+    text = input_entry.get() 
+    if not text:
+        set_status("Ошибка: введите текст сообщения", "red")
+        return
+    all_items = tree.get_children()
+    if all_items:
+        last_item = all_items[-1]
+        last_id = int(tree.item(last_item)['values'][0])
+        new_id = last_id + 1
+    else:
+        new_id = 1
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    tree.insert('', 'end', values=(new_id, text, current_time, "admin"))    
+    input_entry.delete(0, 'end') # Очищаем поле ввода
+    set_status("Запись добавлена", "green")
+
+
+def delete_row():
+    selected_item = tree.selection()
+    if selected_item:
+        tree.delete(selected_item)
+        set_status("Запись удалена", "green")
+    else:
+        set_status("Ошибка: сначала выберите строку", "red")
+
+def move_up():
+    leaves = tree.get_children('')
+    for item in tree.selection():
+        idx = leaves.index(item)
+        if idx > 0:
+            tree.move(item, '', idx - 1)
+
+def move_down():
+    leaves = tree.get_children('')
+    for item in tree.selection():
+        idx = leaves.index(item)
+        if idx < len(leaves) - 1:
+            tree.move(item, '', idx + 1)
+
+
+def set_status(message, color="black"):
+    status_label.config(text=message, fg=color)
+
+
+def check_selection(event):
+    selected = tree.selection()
+    if not selected:
+        return
+    
+    item = selected[0]
+    all_items = tree.get_children()
+    idx = all_items.index(item)
+
+    if idx == 0:
+        btn_up.config(state="disabled")
+    else:
+        btn_up.config(state="normal")
+
+    if idx == len(all_items) - 1:
+        btn_down.config(state="disabled")
+    else:
+        btn_down.config(state="normal")
+
+
+window = tkinter.Tk()
+window.resizable(False, False)
+window.title("Код Цезаря")
+window.geometry('400x500')
+
+status_label = tkinter.Label(window, text="Готов", bd=1, relief=tkinter.SUNKEN, anchor=tkinter.W)
+status_label.pack(side=tkinter.BOTTOM, fill=tkinter.X)
+
+table_frame = tkinter.Frame(window)
+table_frame.pack(pady=10, fill="both", expand=True)
+
+columns = ("id", "text", "time", "ip")
+tree = ttk.Treeview(table_frame, columns=columns, show="headings")
+
+tree.heading("id", text="ID")
+tree.heading("text", text="Текст")
+tree.heading("time", text="Время")
+tree.heading("ip", text="Адрес")
+
+tree.column("id", width=50, anchor="center")
+tree.column("text", width=100)
+tree.column("time", width=90, anchor="center")
+tree.column("ip", width=80, anchor="center")
+
+table_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+tree.configure(yscrollcommand=table_scroll.set)
+tree.bind("<<TreeviewSelect>>", check_selection)
+
+tree.pack(side="left", fill="both", expand=True)
+table_scroll.pack(side="right", fill="y")
+
+actions_frame = tkinter.Frame(window)
+actions_frame.pack(side="right", fill="y", padx=5, pady=10)
+
+btn_up = tkinter.Button(actions_frame, text="▲", width=3, command=move_up)
+btn_up.pack(pady=5)
+
+btn_down = tkinter.Button(actions_frame, text="▼", width=3, command=move_down)
+btn_down.pack(pady=5)
+
+btn_del = tkinter.Button(actions_frame, text="✖", width=3, fg="red", command=delete_row)
+btn_del.pack(pady=20)
+
+tkinter.Label(window, text="Введите сообщение:").pack(pady=(10, 0))
+input_entry = tkinter.Entry(window, width=50)
+input_entry.pack(pady=5)
+
+tkinter.Button(window, text="Добавить строку", width=BTN_WIDTH, command=add_line).pack(pady=BTN_PADY)
+tkinter.Button(window, text="Загрузить файл", width=BTN_WIDTH, command=load_file).pack(pady=BTN_PADY)
+tkinter.Button(window, text="Зашифровать и сохранить", width=BTN_WIDTH, command=save_file).pack(pady=BTN_PADY)
+
+window.mainloop()
