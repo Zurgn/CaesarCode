@@ -79,8 +79,8 @@ def add_line():
 def delete_row():
     selected_item = tree.selection()
     if selected_item:
+        hover_panel.place_forget()
         tree.delete(selected_item)
-        set_status("Запись удалена", "green")
     else:
         set_status("Ошибка: сначала выберите строку", "red")
 
@@ -90,6 +90,7 @@ def move_up():
         idx = leaves.index(item)
         if idx > 0:
             tree.move(item, '', idx - 1)
+            check_selection(None)
 
 def move_down():
     leaves = tree.get_children('')
@@ -97,11 +98,10 @@ def move_down():
         idx = leaves.index(item)
         if idx < len(leaves) - 1:
             tree.move(item, '', idx + 1)
-
+            check_selection(None)
 
 def set_status(message, color="black"):
     status_label.config(text=message, fg=color)
-
 
 def check_selection(event):
     selected = tree.selection()
@@ -123,6 +123,18 @@ def check_selection(event):
         btn_down.config(state="normal")
 
 
+def on_mouse_move(event):
+    item_id = tree.identify_row(event.y)
+    if item_id:
+        bbox = tree.bbox(item_id)
+        if bbox:
+            x, y, width, height = bbox
+            hover_panel.place(x=2, y=table_frame.winfo_y() + y - 2)            
+            tree.selection_set(item_id)
+            check_selection(None)
+    else:
+        hover_panel.place_forget()
+
 window = tkinter.Tk()
 window.resizable(False, False)
 window.title("Код Цезаря")
@@ -132,7 +144,7 @@ status_label = tkinter.Label(window, text="Готов", bd=1, relief=tkinter.SUN
 status_label.pack(side=tkinter.BOTTOM, fill=tkinter.X)
 
 table_frame = tkinter.Frame(window)
-table_frame.pack(pady=10, fill="both", expand=True)
+table_frame.pack(fill="both", expand=True, padx=5)
 
 columns = ("id", "text", "time", "ip")
 tree = ttk.Treeview(table_frame, columns=columns, show="headings")
@@ -150,21 +162,23 @@ tree.column("ip", width=80, anchor="center")
 table_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
 tree.configure(yscrollcommand=table_scroll.set)
 tree.bind("<<TreeviewSelect>>", check_selection)
+tree.bind("<Motion>", on_mouse_move)
 
-tree.pack(side="left", fill="both", expand=True)
-table_scroll.pack(side="right", fill="y")
+table_frame.columnconfigure(0, minsize=50)
+table_frame.columnconfigure(1, weight=1)
+table_frame.columnconfigure(2, minsize=20)
 
-actions_frame = tkinter.Frame(window)
-actions_frame.pack(side="right", fill="y", padx=5, pady=10)
+tree.grid(row=0, column=1, sticky="nsew")
+table_scroll.grid(row=0, column=2, sticky="ns")
 
-btn_up = tkinter.Button(actions_frame, text="▲", width=3, command=move_up)
-btn_up.pack(pady=5)
+hover_panel = tkinter.Frame(window, bg="lightgrey")
+btn_up = tkinter.Button(hover_panel, text="▲", width=1, command=move_up)
+btn_down = tkinter.Button(hover_panel, text="▼", width=1, command=move_down)
+btn_del = tkinter.Button(hover_panel, text="✖", width=1, fg="red", command=delete_row)
 
-btn_down = tkinter.Button(actions_frame, text="▼", width=3, command=move_down)
-btn_down.pack(pady=5)
-
-btn_del = tkinter.Button(actions_frame, text="✖", width=3, fg="red", command=delete_row)
-btn_del.pack(pady=20)
+btn_up.pack(side="left")
+btn_down.pack(side="left")
+btn_del.pack(side="left")
 
 tkinter.Label(window, text="Введите сообщение:").pack(pady=(10, 0))
 input_entry = tkinter.Entry(window, width=50)
