@@ -1,5 +1,0 @@
-Интересный факт: корова может подняться по лестнице, но не может спуститься.
-
-https://github.com/Zurgn/CaesarCode
-
-Hasta la vista, baby

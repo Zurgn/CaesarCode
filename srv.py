@@ -4,8 +4,6 @@ import cypher
 import datetime
 import os
 
-# ID: 70223717
-
 app = flask.Flask(__name__)
 
 def get_next_index(filename):
@@ -16,6 +14,9 @@ def get_next_index(filename):
 
 @app.route('/<user_id>', methods=['GET', 'POST'])
 def handle_request(user_id):
+    ID = '70223717'
+    if user_id != ID:
+        return flask.abort(404)
     if flask.request.method == 'POST':
         original_text = flask.request.form.get('text')
         encrypted_text = cypher.encrypt(original_text)

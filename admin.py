@@ -72,7 +72,7 @@ def add_line():
         new_id = 1
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     tree.insert('', 'end', values=(new_id, text, current_time, "admin"))    
-    input_entry.delete(0, 'end') # Очищаем поле ввода
+    input_entry.delete(0, 'end')
     set_status("Запись добавлена", "green")
 
 
@@ -121,7 +121,6 @@ def check_selection(event):
         btn_down.config(state="disabled")
     else:
         btn_down.config(state="normal")
-
 
 def on_mouse_move(event):
     item_id = tree.identify_row(event.y)

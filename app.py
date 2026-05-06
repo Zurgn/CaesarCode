@@ -14,14 +14,14 @@ while LINE_OUTPUT_TEXT >= 10:
 
 def load_file():
     global PATH
-    file_path = filedialog.askopenfilename(initialfile="encrypt.txt")
+    file_path = filedialog.askopenfilename(initialfile="encrypt_2.txt")
     if not file_path:
         return
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
             for i, line in enumerate(lines, start=1):
-                clean_line = line.rstrip('\n\r')
+                clean_line = line.rstrip('\n')
                 for char in clean_line:
                     if char not in cypher.circle: 
                         set_status(f"файл содержит недопустимые символы на строке № {i}", "red")
@@ -30,9 +30,9 @@ def load_file():
             text_area.configure(state=tkinter.NORMAL)
             text_area.delete("1.0", tkinter.END)
             for line in lines:
-                clean_line = line.rstrip('\n\r')
+                clean_line = line.rstrip('\n')
                 if clean_line:
-                    decrypted = cypher.decrypt(clean_line)
+                    decrypted = cypher.decrypt(clean_line, ID)
                     text_area.insert(tkinter.END, decrypted + '\n')
             text_area.configure(state=tkinter.DISABLED)
             update_line_numbers(text_area, lines_text1)
@@ -49,33 +49,27 @@ def save_file():
             with open(PATH, "w", encoding="utf-8") as file:
                 for line in content:
                     if line.strip():
-                        encrypted_line = cypher.encrypt(line)
+                        encrypted_line = cypher.encrypt(line, ID)
                         file.write(encrypted_line + '\n')
         except Exception:
             set_status("файл недоступен для записи", "red")
 
-
-def set_scroll(sbar, first, last):
-    lines_text1.yview_moveto(first)
-    first, last = float(first), float(last)
-    if first <= 0.0 and last >= 1.0:
-        sbar.place_forget()
-    else:
-        sbar.place(relx=1.0, y=0, anchor='ne', height=195, width=20)
-    sbar.set(first, last)
+def set_status(message, color="black"):
+    status_label.config(text=message, fg=color)
 
 def add_line():
     line = new_line.get("1.0", tkinter.END).strip()
     if line:
         text_area.configure(state=tkinter.NORMAL)
-        text_area.insert(tkinter.END, f"\n{line}")
+        current_content = text_area.get("1.0", "end-1c")
+        if current_content:
+            text_area.insert(tkinter.END, f"\n{line}")
+        else:
+            text_area.insert(tkinter.END, line)
         new_line.delete("1.0", tkinter.END)
         text_area.configure(state=tkinter.DISABLED)
         update_line_numbers(text_area, lines_text1)
         update_line_numbers(new_line, lines_text2)
-
-def set_status(message, color="black"):
-    status_label.config(text=message, fg=color)
 
 def update_line_numbers(text_widget, number_widget):
     number_widget.yview_moveto(text_widget.yview()[0])
@@ -87,9 +81,24 @@ def update_line_numbers(text_widget, number_widget):
     number_widget.config(state="disabled")
     number_widget.yview_moveto(text_widget.yview()[0])
 
+def set_scroll(sbar, first, last):
+    lines_text1.yview_moveto(first)
+    first, last = float(first), float(last)
+    if first <= 0.0 and last >= 1.0:
+        sbar.place_forget()
+    else:
+        sbar.place(relx=1.0, y=0, anchor='ne', height=195, width=20)
+    sbar.set(first, last)
+
 def sync_scroll(*args):
     text_area.yview(*args)
     lines_text1.yview(*args)
+
+def sync_on_wheel(event):
+    scroll_units = int(-1 * (event.delta / 120))
+    new_line.yview_scroll(scroll_units, "units")
+    lines_text2.yview_scroll(scroll_units, "units")
+    return "break"
 
 
 window = tkinter.Tk()
@@ -126,6 +135,8 @@ lines_text2.pack(side="left", fill="y")
 new_line = tkinter.Text(new_line_container, height=3+LINE_OUTPUT_NEWLINE, width=60)
 new_line.pack(side="left")
 new_line.bind("<KeyRelease>", lambda e: update_line_numbers(new_line, lines_text2))
+new_line.bind("<MouseWheel>", sync_on_wheel)
+lines_text2.bind("<MouseWheel>", sync_on_wheel)
 
 tkinter.Button(window, text="Добавить строку", width=BTN_WIDTH, command=add_line).pack(pady=BTN_PADY)
 tkinter.Button(window, text="Загрузить файл", width=BTN_WIDTH, command=load_file).pack(pady=BTN_PADY)
